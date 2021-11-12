@@ -26,19 +26,33 @@
 4. ファイル名を元に判別
 
 ## フレームワークの判別
+### パスによる判別
 解凍したバックアップのパスにおいて、それぞれ以下の正規表現に合致する場合、そのフレームワークを用いて開発をしていると判断した。
 
-### Flutter
+#### Flutter
 `^Payload/[^/]+.app/Frameworks/Flutter.framework/Flutter$`
 
-### React Native
+#### React Native
 `^Payload/[^/]+.app/[^/]+.jsbundle$`
 
-### Unity
+#### Unity
 `^Payload/[^/]+.app/Frameworks/UnityFramework.framework/UnityFramework$`
 
-### Xamarin
+#### Xamarin
 `^Payload/[^/]+.app/Xamarin.iOS.dll$`
+
+### バイナリー解析による判別
+バイナリー解析は、以下の手順で、バックアップから実行ファイルを解凍して行う。
+1. バックアップのパスにおいて、以下の正規表現に合致する`Info.plist`ファイルを解凍  
+  `^Payload/[^/]+/Info.plist$`
+2. 解凍した`Info.plist`にある`CFBundleExecutable`キーに対応する実行ファイル（ここでは`$ExecutableFile`とする）を解凍
+3. 解凍した実行ファイルに対し、以下のコマンドを実行  
+  `oTool -L $ExecutableFile`
+
+3の実行結果に特定の文字列が含まれるかによって、フレームワークを判別する
+
+#### SwiftUI
+`/System/Library/Frameworks/SwiftUI.framework/SwiftUI`
 
 ## WebView主体アプリの判定条件
 WebView主体アプリとは、アプリの主要となる画面の多くにWebViewが設置されており、そこにWebページ（Webサイトからの読み込み、またはアプリ内に格納されたHTMLファイル）を表示しているアプリを指す。
@@ -75,17 +89,23 @@ WebViewが一つの画面の一部にのみ使用されている場合は、ス�
 # フレームワークごとの比率
 | 名前 | 本数 | 比率 |
 | --- | --- | --- |
-| Flutter | 1,054 | 7.8% |
+| Flutter | 1,054 | 7.7% |
+| SwiftUI | 748 | 5.5% |
 | React Native | 667 | 4.9% |
 | Unity | 372 | 2.7% |
 | Xamarin | 182 | 1.3% |
-| 未分類 | 11,325 | 83.3% |
-| 合計 | 13,599 | 100% |
+| 未分類 | 10,588 | 77.8% |
+| 合計 | 13,611 | 100% |
 
-表の「未分類」には、まだ判別方法が確立していないJavascriptを用いたフレームワーク、UIKit、SwiftUIなども含まれる。
+表の「未分類」には、まだ判別方法が確立していないJavascriptを用いたフレームワーク、UIKitなどが含まれる。
 
-また、一本のアプリにFlutterとUnityが併用して使われているアプリが2本あった。それらはFlutterとUnity両方に計上している。  
-そのため表の総数は調査対象となった1万3597本よりも2件多い。
+また、上記のフレームワークが、一本のアプリに併用して使われている場合はそれぞれのフレームワークに計上している。
+1. SwiftUIとUnityが7本
+2. SwiftUIとFlutterが3本
+3. SwiftUIと React Native が2本
+4. FlutterとUnityが2本
+
+以上、計14本分が調査対象となったアプリ1万3597本に加算されている。
 
 # WebView主体アプリとフレームワークごとの比率
 
@@ -93,11 +113,12 @@ WebViewが一つの画面の一部にのみ使用されている場合は、ス�
 | --- | --- | --- | --- |
 | WebView主体 | 4,125 | +4,125 | 30.3% |
 | Flutter | 1,023 | -31 | 7.5% |
+| SwiftUI | 737 | -11 | 5.4% |
 | React Native | 581 | -86 | 4.3% |
 | Unity | 372 | 0 | 2.7% |
 | Xamarin | 172 | -10 | 1.3% |
-| 未分類 | 7,326 | -3,998 | 53.9% |
-| 合計 | 13,599 | 0 | 100% |
+| 未分類 | 6,601 | -3,987 | 48.5% |
+| 合計 | 13,611 | 0 | 100% |
 
 表の「増減」は、WebView主体アプリであると判断され「WebView主体」として計上された本数を指す。
 
